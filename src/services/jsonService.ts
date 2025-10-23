@@ -1,8 +1,9 @@
 import { invoke } from '@tauri-apps/api/core'
 import type { ValidationResult } from '../types/validation'
+import type { FormattingOptions, FormattingResult } from '../types/formatting'
 
 /**
- * JSON 验证服务
+ * JSON 验证与格式化服务
  */
 export class JsonValidationService {
   /**
@@ -59,6 +60,51 @@ export class JsonValidationService {
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
+  }
+
+  /**
+   * 格式化 JSON 字符串
+   * @param input - 待格式化的 JSON 字符串
+   * @param options - 格式化选项
+   * @returns 格式化结果
+   */
+  async formatJson(
+    input: string,
+    options: FormattingOptions
+  ): Promise<FormattingResult> {
+    try {
+      const result = await invoke<FormattingResult>('format_json', {
+        input,
+        options,
+      })
+      return result
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '未知错误'
+      return {
+        type: 'Error',
+        message: `系统错误: ${message}`,
+      }
+    }
+  }
+
+  /**
+   * 压缩 JSON 字符串
+   * @param input - 待压缩的 JSON 字符串
+   * @returns 格式化结果
+   */
+  async minifyJson(input: string): Promise<FormattingResult> {
+    try {
+      const result = await invoke<FormattingResult>('minify_json', {
+        input,
+      })
+      return result
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '未知错误'
+      return {
+        type: 'Error',
+        message: `系统错误: ${message}`,
+      }
+    }
   }
 }
 

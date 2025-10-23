@@ -1,129 +1,189 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { jsonService } from './services/jsonService'
-import { type ValidationResult, isSuccess, isError } from './types/validation'
+import { Toolbar } from './components/Toolbar'
+import { JsonPanel } from './components/JsonPanel'
+import {
+  type FormattingOptions,
+  isFormattingSuccess,
+} from './types/formatting'
+import { isSuccess, isError } from './types/validation'
 
 function App() {
-  const [jsonInput, setJsonInput] = useState('')
-  const [result, setResult] = useState<ValidationResult | null>(null)
-  const [isValidating, setIsValidating] = useState(false)
+  const [inputJson, setInputJson] = useState('')
+  const [outputJson, setOutputJson] = useState('')
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [validationStatus, setValidationStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle')
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(
+    {
+      indent: 2,
+      trailing_newline: true,
+    }
+  )
+
+  // 计算输入的行数和字符数
+  const inputStats = useMemo(() => {
+    const lines = inputJson.split('\n').length
+    const chars = inputJson.length
+    return { lines, chars }
+  }, [inputJson])
+
+  // 计算输出的行数和字符数
+  const outputStats = useMemo(() => {
+    const lines = outputJson.split('\n').length
+    const chars = outputJson.length
+    return { lines, chars }
+  }, [outputJson])
 
   const handleValidate = async () => {
-    if (!jsonInput.trim()) {
-      setResult({
-        type: 'Error',
-        message: '请输入 JSON 内容',
-      })
+    if (!inputJson.trim()) {
+      setErrorMessage('请输入 JSON 内容')
+      setValidationStatus('error')
       return
     }
 
-    setIsValidating(true)
+    setIsProcessing(true)
+    setErrorMessage('')
+
     try {
-      const validationResult = await jsonService.validateJson(jsonInput)
-      setResult(validationResult)
+      const result = await jsonService.validateJson(inputJson)
+
+      if (isSuccess(result)) {
+        setValidationStatus('success')
+        setOutputJson(JSON.stringify(result.data, null, 2))
+        setErrorMessage('')
+      } else if (isError(result)) {
+        setValidationStatus('error')
+        let msg = result.message
+        if (result.line && result.column) {
+          msg += ` (第 ${result.line} 行, 第 ${result.column} 列)`
+        }
+        setErrorMessage(msg)
+      }
     } catch (error) {
-      setResult({
-        type: 'Error',
-        message: `验证失败: ${error}`,
-      })
+      setValidationStatus('error')
+      setErrorMessage(`验证失败: ${error}`)
     } finally {
-      setIsValidating(false)
+      setIsProcessing(false)
     }
   }
 
-  const loadSampleJson = (type: 'valid' | 'invalid-comma' | 'invalid-quote') => {
-    const samples = {
-      valid: '{\n  "name": "Alice",\n  "age": 30,\n  "city": "Beijing"\n}',
-      'invalid-comma': '{\n  "name": "Bob",\n  "age": 25,\n}',
-      'invalid-quote': '{\n  "name: "Charlie"\n}',
+  const handleFormat = async () => {
+    if (!inputJson.trim()) {
+      setErrorMessage('请输入 JSON 内容')
+      setValidationStatus('error')
+      return
     }
-    setJsonInput(samples[type])
-    setResult(null)
+
+    setIsProcessing(true)
+    setErrorMessage('')
+
+    try {
+      const result = await jsonService.formatJson(inputJson, formattingOptions)
+
+      if (isFormattingSuccess(result)) {
+        setValidationStatus('success')
+        setOutputJson(result.formatted)
+        setErrorMessage('')
+      } else {
+        setValidationStatus('error')
+        setErrorMessage(result.message)
+      }
+    } catch (error) {
+      setValidationStatus('error')
+      setErrorMessage(`格式化失败: ${error}`)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleMinify = async () => {
+    if (!inputJson.trim()) {
+      setErrorMessage('请输入 JSON 内容')
+      setValidationStatus('error')
+      return
+    }
+
+    setIsProcessing(true)
+    setErrorMessage('')
+
+    try {
+      const result = await jsonService.minifyJson(inputJson)
+
+      if (isFormattingSuccess(result)) {
+        setValidationStatus('success')
+        setOutputJson(result.formatted)
+        setErrorMessage('')
+      } else {
+        setValidationStatus('error')
+        setErrorMessage(result.message)
+      }
+    } catch (error) {
+      setValidationStatus('error')
+      setErrorMessage(`压缩失败: ${error}`)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleClear = () => {
+    if (
+      inputJson ||
+      outputJson ||
+      window.confirm('确定要清空所有内容吗?')
+    ) {
+      setInputJson('')
+      setOutputJson('')
+      setErrorMessage('')
+      setValidationStatus('idle')
+    }
   }
 
   return (
-    <div className="container">
-      <header>
+    <div className="app">
+      <header className="app-header">
         <h1>JSON Formatter & Validator</h1>
-        <p className="subtitle">Desktop utility for JSON validation and formatting</p>
+        <p className="app-subtitle">专业的 JSON 验证与格式化工具</p>
       </header>
 
-      <main>
-        <div className="status-card">
-          <h2>✅ Task 2: JSON Validation Service - Testing</h2>
-          <p>14/14 Rust unit tests passed</p>
-        </div>
+      <Toolbar
+        onValidate={handleValidate}
+        onFormat={handleFormat}
+        onMinify={handleMinify}
+        onClear={handleClear}
+        isProcessing={isProcessing}
+        validationStatus={validationStatus}
+        formattingOptions={formattingOptions}
+        onFormattingOptionsChange={setFormattingOptions}
+      />
 
-        <div className="test-section">
-          <h3>JSON Validation Test</h3>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <button onClick={() => loadSampleJson('valid')}>
-              Load Valid JSON
-            </button>
-            <button onClick={() => loadSampleJson('invalid-comma')} style={{ marginLeft: '0.5rem' }}>
-              Load Invalid (Comma)
-            </button>
-            <button onClick={() => loadSampleJson('invalid-quote')} style={{ marginLeft: '0.5rem' }}>
-              Load Invalid (Quote)
-            </button>
-          </div>
-
-          <textarea
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            placeholder="Enter JSON here..."
-            style={{
-              width: '100%',
-              minHeight: '200px',
-              fontFamily: 'monospace',
-              padding: '1rem',
-              fontSize: '14px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              marginBottom: '1rem',
-            }}
+      <main className="app-main">
+        <div className="panels-container">
+          <JsonPanel
+            title="输入"
+            value={inputJson}
+            onChange={setInputJson}
+            placeholder="在此输入或粘贴 JSON..."
+            error={validationStatus === 'error' ? errorMessage : undefined}
+            lineCount={inputStats.lines}
+            charCount={inputStats.chars}
           />
 
-          <button onClick={handleValidate} disabled={isValidating}>
-            {isValidating ? 'Validating...' : 'Validate JSON'}
-          </button>
-
-          {result && (
-            <div style={{ marginTop: '1rem' }}>
-              {isSuccess(result) ? (
-                <div style={{ padding: '1rem', backgroundColor: '#d4edda', borderRadius: '4px', color: '#155724' }}>
-                  <strong>✅ Valid JSON</strong>
-                  <p>Size: {jsonService.formatSize(result.size)}</p>
-                  <pre style={{ marginTop: '0.5rem', overflow: 'auto', maxHeight: '200px' }}>
-                    {JSON.stringify(result.data, null, 2)}
-                  </pre>
-                </div>
-              ) : isError(result) ? (
-                <div style={{ padding: '1rem', backgroundColor: '#f8d7da', borderRadius: '4px', color: '#721c24' }}>
-                  <strong>❌ Invalid JSON</strong>
-                  <p>{result.message}</p>
-                  {result.line && result.column && (
-                    <p>Location: Line {result.line}, Column {result.column}</p>
-                  )}
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        <div className="next-steps">
-          <h3>Progress</h3>
-          <ol>
-            <li>✅ Task 1: Tauri Project Scaffolding</li>
-            <li>✅ Task 2: JSON Parsing & Validation Service</li>
-            <li>⏳ Task 3: JSON Formatting & Minification Engine</li>
-            <li>⏳ Task 4: Desktop UI Layout</li>
-          </ol>
+          <JsonPanel
+            title="输出"
+            value={outputJson}
+            readOnly
+            placeholder="处理结果将显示在这里..."
+            lineCount={outputStats.lines}
+            charCount={outputStats.chars}
+          />
         </div>
       </main>
 
-      <footer>
-        <p>Version 0.1.0 | Built with Tauri 2.9</p>
+      <footer className="app-footer">
+        <p>Version 0.1.0 | 任务 3 & 4 完成</p>
       </footer>
     </div>
   )
