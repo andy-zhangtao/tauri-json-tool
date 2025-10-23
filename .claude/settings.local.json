@@ -12,7 +12,9 @@
       "Bash(npx tauri init --ci)",
       "Bash(npx tsc:*)",
       "Bash(npm run tauri:dev:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(cargo test:*)",
+      "Bash($HOME/.cargo/bin/cargo test:*)"
     ],
     "deny": [],
     "ask": []
