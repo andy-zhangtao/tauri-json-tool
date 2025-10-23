@@ -6,9 +6,11 @@ interface ToolbarProps {
   onMinify: () => void
   onClear: () => void
   isProcessing: boolean
-  validationStatus: 'idle' | 'success' | 'error'
+  validationStatus: 'idle' | 'validating' | 'success' | 'error'
   formattingOptions: FormattingOptions
   onFormattingOptionsChange: (options: FormattingOptions) => void
+  autoValidate: boolean
+  onAutoValidateChange: (enabled: boolean) => void
 }
 
 export function Toolbar({
@@ -20,6 +22,8 @@ export function Toolbar({
   validationStatus,
   formattingOptions,
   onFormattingOptionsChange,
+  autoValidate,
+  onAutoValidateChange,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -92,13 +96,27 @@ export function Toolbar({
             尾部换行
           </label>
         </div>
+
+        <div className="option-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={autoValidate}
+              onChange={(e) => onAutoValidateChange(e.target.checked)}
+              disabled={isProcessing}
+              title="启用后,输入变化时自动验证 JSON"
+            />
+            自动验证
+          </label>
+        </div>
       </div>
 
       <div className="toolbar-section">
         <div className={`status-indicator status-${validationStatus}`}>
-          {validationStatus === 'idle' && '未验证'}
-          {validationStatus === 'success' && '✓ 有效'}
-          {validationStatus === 'error' && '✗ 错误'}
+          {validationStatus === 'idle' && '⚪ 未验证'}
+          {validationStatus === 'validating' && '⏳ 验证中...'}
+          {validationStatus === 'success' && '✓ JSON 有效'}
+          {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
       </div>
     </div>

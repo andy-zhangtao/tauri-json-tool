@@ -1,27 +1,31 @@
-import { useState, useMemo } from 'react'
-import { jsonService } from './services/jsonService'
-import { Toolbar } from './components/Toolbar'
+import { useEffect, useMemo, useState } from 'react'
 import { JsonPanel } from './components/JsonPanel'
-import {
-  type FormattingOptions,
-  isFormattingSuccess,
-} from './types/formatting'
-import { isSuccess, isError } from './types/validation'
+import { Toolbar } from './components/Toolbar'
+import { useDebounce } from './hooks/useDebounce'
+import { usePreferences } from './hooks/usePreferences'
+import { jsonService } from './services/jsonService'
+import { isFormattingSuccess } from './types/formatting'
+import { isError, isSuccess } from './types/validation'
 
 function App() {
   const [inputJson, setInputJson] = useState('')
   const [outputJson, setOutputJson] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [validationStatus, setValidationStatus] = useState<
-    'idle' | 'success' | 'error'
+    'idle' | 'validating' | 'success' | 'error'
   >('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(
-    {
-      indent: 2,
-      trailing_newline: true,
-    }
-  )
+
+  // 使用偏好管理 Hook
+  const {
+    autoValidate,
+    formattingOptions,
+    setAutoValidate,
+    setFormattingOptions,
+  } = usePreferences()
+
+  // 对输入进行防抖处理(500ms)
+  const debouncedInputJson = useDebounce(inputJson, 500)
 
   // 计算输入的行数和字符数
   const inputStats = useMemo(() => {
@@ -37,6 +41,7 @@ function App() {
     return { lines, chars }
   }, [outputJson])
 
+  // 验证函数
   const handleValidate = async () => {
     if (!inputJson.trim()) {
       setErrorMessage('请输入 JSON 内容')
@@ -45,6 +50,7 @@ function App() {
     }
 
     setIsProcessing(true)
+    setValidationStatus('validating')
     setErrorMessage('')
 
     try {
@@ -70,6 +76,14 @@ function App() {
     }
   }
 
+  // 自动验证:当启用自动验证且输入变化时触发
+  useEffect(() => {
+    if (autoValidate && debouncedInputJson.trim()) {
+      handleValidate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedInputJson, autoValidate])
+
   const handleFormat = async () => {
     if (!inputJson.trim()) {
       setErrorMessage('请输入 JSON 内容')
@@ -78,6 +92,7 @@ function App() {
     }
 
     setIsProcessing(true)
+    setValidationStatus('validating')
     setErrorMessage('')
 
     try {
@@ -107,6 +122,7 @@ function App() {
     }
 
     setIsProcessing(true)
+    setValidationStatus('validating')
     setErrorMessage('')
 
     try {
@@ -130,8 +146,8 @@ function App() {
 
   const handleClear = () => {
     if (
-      inputJson ||
-      outputJson ||
+      !inputJson &&
+      !outputJson ||
       window.confirm('确定要清空所有内容吗?')
     ) {
       setInputJson('')
@@ -157,6 +173,8 @@ function App() {
         validationStatus={validationStatus}
         formattingOptions={formattingOptions}
         onFormattingOptionsChange={setFormattingOptions}
+        autoValidate={autoValidate}
+        onAutoValidateChange={setAutoValidate}
       />
 
       <main className="app-main">
@@ -183,7 +201,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Version 0.1.0 | 任务 3 & 4 完成</p>
+        <p>Version 0.1.0 | ztao8607@gmail.com</p>
       </footer>
     </div>
   )

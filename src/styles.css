@@ -189,6 +189,22 @@ button:disabled {
   color: var(--accent-error);
 }
 
+.status-validating {
+  background-color: rgba(122, 162, 247, 0.2);
+  color: var(--accent-primary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 /* 主内容区 */
 .app-main {
   flex: 1;
