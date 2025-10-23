@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm --version:*)",
+      "Bash(rustc:*)",
+      "Bash(cargo --version:*)",
+      "Bash(source $HOME/.cargo/env)",
+      "Bash(npm install:*)",
+      "Bash(npm create:*)",
+      "Bash(npm view:*)",
+      "Bash(npx tauri init --ci)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run tauri:dev:*)",
+      "Bash(npm run lint:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
