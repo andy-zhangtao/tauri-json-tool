@@ -5,6 +5,8 @@ interface ToolbarProps {
   onFormat: () => void
   onMinify: () => void
   onClear: () => void
+  onImport: () => void
+  onExport: () => void
   isProcessing: boolean
   validationStatus: 'idle' | 'validating' | 'success' | 'error'
   formattingOptions: FormattingOptions
@@ -18,6 +20,8 @@ export function Toolbar({
   onFormat,
   onMinify,
   onClear,
+  onImport,
+  onExport,
   isProcessing,
   validationStatus,
   formattingOptions,
@@ -27,6 +31,25 @@ export function Toolbar({
 }: ToolbarProps) {
   return (
     <div className="toolbar">
+      <div className="toolbar-section">
+        <button
+          onClick={onImport}
+          disabled={isProcessing}
+          className="btn-secondary"
+          title="从文件导入 JSON"
+        >
+          导入
+        </button>
+        <button
+          onClick={onExport}
+          disabled={isProcessing}
+          className="btn-secondary"
+          title="导出 JSON 到文件"
+        >
+          导出
+        </button>
+      </div>
+
       <div className="toolbar-section">
         <button
           onClick={onValidate}

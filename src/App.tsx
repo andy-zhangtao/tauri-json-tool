@@ -7,6 +7,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { ErrorLocation } from './hooks/useErrorHighlight'
 import { usePreferences } from './hooks/usePreferences'
 import { jsonService } from './services/jsonService'
+import { fileService } from './services/fileService'
 import { isFormattingSuccess } from './types/formatting'
 import { isError, isSuccess } from './types/validation'
 import { extractErrorContext } from './utils/errorParser'
@@ -271,6 +272,62 @@ function App() {
     }
   }
 
+  // 导入 JSON 文件
+  const handleImport = async () => {
+    try {
+      setIsProcessing(true)
+      const result = await fileService.importJsonFile()
+
+      if (result) {
+        // 用户选择了文件
+        setInputJson(result.content)
+        setErrorMessage('')
+        setErrorLocation(undefined)
+        setValidationStatus('idle')
+
+        // 如果启用了自动验证,会在输入变化后自动触发验证
+        // 否则需要用户手动点击验证按钮
+      }
+      // 如果 result 为 null,表示用户取消了选择
+    } catch (error) {
+      setErrorMessage(`导入失败: ${error}`)
+      setValidationStatus('error')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // 导出 JSON 文件
+  const handleExport = async () => {
+    // 优先导出输出内容,如果没有输出则导出输入内容
+    const contentToExport = outputState.value || inputJson
+
+    if (!contentToExport.trim()) {
+      setErrorMessage('没有可导出的内容')
+      setValidationStatus('error')
+      return
+    }
+
+    try {
+      setIsProcessing(true)
+      const savedPath = await fileService.exportJsonFile(contentToExport, {
+        defaultFileName: 'formatted.json',
+      })
+
+      if (savedPath) {
+        // 导出成功,可以显示成功消息
+        // 暂时通过重置错误消息来表示成功
+        setErrorMessage('')
+      }
+      // 如果 savedPath 为 null,表示用户取消了保存
+    } catch (error) {
+      setErrorMessage(`导出失败: ${error}`)
+      setValidationStatus('error')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   // 复制输入内容
   const handleCopyInput = useCallback(async () => {
     await copyInput(inputJson)
@@ -311,6 +368,8 @@ function App() {
         onFormat={handleFormat}
         onMinify={handleMinify}
         onClear={handleClear}
+        onImport={handleImport}
+        onExport={handleExport}
         isProcessing={isProcessing}
         validationStatus={validationStatus}
         formattingOptions={formattingOptions}

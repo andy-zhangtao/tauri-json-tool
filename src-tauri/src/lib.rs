@@ -3,7 +3,8 @@ mod services;
 
 use models::formatting::{FormattingOptions, FormattingResult};
 use models::validation::ValidationResult;
-use services::{json_formatter, json_parser};
+use services::{json_formatter, json_parser, file_io};
+use serde::Serialize;
 
 /// Tauri command: 验证 JSON 字符串
 #[tauri::command]
@@ -38,9 +39,46 @@ async fn minify_json(input: String) -> Result<FormattingResult, String> {
     .map_err(|e| format!("Task execution error: {}", e))?
 }
 
+/// 文件读取结果
+#[derive(Debug, Serialize)]
+pub struct FileReadResult {
+    pub content: String,
+    pub file_name: String,
+}
+
+/// Tauri command: 从文件导入 JSON
+#[tauri::command]
+async fn import_json_file(file_path: String) -> Result<FileReadResult, String> {
+    // 在异步任务中执行文件读取，避免阻塞 UI
+    tokio::task::spawn_blocking(move || {
+        match file_io::read_json_file(&file_path) {
+            Ok(result) => Ok(FileReadResult {
+                content: result.content,
+                file_name: result.file_name,
+            }),
+            Err(e) => Err(e),
+        }
+    })
+    .await
+    .map_err(|e| format!("Task execution error: {}", e))?
+}
+
+/// Tauri command: 导出 JSON 到文件
+#[tauri::command]
+async fn export_json_file(file_path: String, content: String) -> Result<String, String> {
+    // 在异步任务中执行文件写入，避免阻塞 UI
+    tokio::task::spawn_blocking(move || {
+        file_io::write_json_file(&file_path, &content)
+    })
+    .await
+    .map_err(|e| format!("Task execution error: {}", e))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_dialog::init())
+    .plugin(tauri_plugin_fs::init())
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
@@ -51,7 +89,13 @@ pub fn run() {
       }
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![validate_json, format_json, minify_json])
+    .invoke_handler(tauri::generate_handler![
+      validate_json,
+      format_json,
+      minify_json,
+      import_json_file,
+      export_json_file
+    ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

@@ -15,7 +15,10 @@
       "Bash(npm run lint:*)",
       "Bash(cargo test:*)",
       "Bash($HOME/.cargo/bin/cargo test:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cargo add:*)",
+      "Bash(RUST_BACKTRACE=1 $HOME/.cargo/bin/cargo test:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
