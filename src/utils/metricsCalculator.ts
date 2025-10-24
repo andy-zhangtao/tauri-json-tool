@@ -4,9 +4,16 @@ import { JsonMetrics, emptyMetrics } from '../types/metrics'
  * 计算 JSON 字符串的完整指标
  *
  * @param jsonString JSON 字符串
+ * @param options 计算选项
  * @returns 完整的 JSON 指标
  */
-export function calculateJsonMetrics(jsonString: string): JsonMetrics {
+export function calculateJsonMetrics(
+  jsonString: string,
+  options?: {
+    skipStructureMetrics?: boolean  // 跳过结构指标计算
+    maxDepth?: number                // 最大遍历深度 (防止深度递归)
+  }
+): JsonMetrics {
   // 空字符串返回空指标
   if (!jsonString) {
     return emptyMetrics
@@ -17,11 +24,31 @@ export function calculateJsonMetrics(jsonString: string): JsonMetrics {
   const chars = jsonString.length
   const bytes = new Blob([jsonString]).size
 
+  // 性能优化: 大文件 (> 1 MB) 默认跳过结构指标计算
+  const isLargeFile = bytes > 1024 * 1024
+  const shouldSkipStructure = options?.skipStructureMetrics || isLargeFile
+
+  // 如果跳过结构指标,直接返回基础指标
+  if (shouldSkipStructure) {
+    return {
+      lines,
+      chars,
+      bytes,
+      depth: 0,
+      objects: 0,
+      arrays: 0,
+      keys: 0,
+    }
+  }
+
   // 初始化结构指标
   let depth = 0
   let objects = 0
   let arrays = 0
   let keys = 0
+
+  // 默认最大深度限制 (防止栈溢出)
+  const maxDepth = options?.maxDepth || 100
 
   // 尝试解析 JSON 并计算结构指标
   try {
@@ -29,6 +56,10 @@ export function calculateJsonMetrics(jsonString: string): JsonMetrics {
 
     // 递归遍历 JSON 结构
     const traverse = (obj: unknown, currentDepth: number): void => {
+      // 深度限制保护
+      if (currentDepth > maxDepth) {
+        return
+      }
       // 更新最大深度
       depth = Math.max(depth, currentDepth)
 

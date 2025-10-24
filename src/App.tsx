@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { JsonPanel } from './components/JsonPanel'
 import { Toolbar } from './components/Toolbar'
-import { ShortcutsHelp } from './components/ShortcutsHelp'
+import { LoadingOverlay } from './components/LoadingOverlay'
 import { useDebounce } from './hooks/useDebounce'
 import { useCopyToClipboard } from './hooks/useCopyToClipboard'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -14,6 +14,9 @@ import { isFormattingSuccess } from './types/formatting'
 import { isError, isSuccess } from './types/validation'
 import { extractErrorContext } from './utils/errorParser'
 import { calculateJsonMetrics } from './utils/metricsCalculator'
+
+// 懒加载非关键组件
+const ShortcutsHelp = lazy(() => import('./components/ShortcutsHelp').then(module => ({ default: module.ShortcutsHelp })))
 
 interface OutputState {
   value: string
@@ -36,6 +39,8 @@ function App() {
   >('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [errorLocation, setErrorLocation] = useState<ErrorLocation | undefined>(undefined)
+  const [loadingMessage, setLoadingMessage] = useState<string>()
+  const [processingTimeMs, setProcessingTimeMs] = useState<number>()
 
   // 使用偏好管理 Hook
   const {
@@ -69,16 +74,7 @@ function App() {
     return calculateJsonMetrics(outputState.value)
   }, [outputState.value])
 
-  // 向后兼容：保留旧的 stats 对象（以防其他地方使用）
-  const inputStats = useMemo(() => ({
-    lines: inputMetrics.lines,
-    chars: inputMetrics.chars,
-  }), [inputMetrics])
-
-  const outputStats = useMemo(() => ({
-    lines: outputMetrics.lines,
-    chars: outputMetrics.chars,
-  }), [outputMetrics])
+  // 注意: inputStats 和 outputStats 已移除,直接使用 inputMetrics 和 outputMetrics
 
   // 验证函数
   const handleValidate = async () => {
@@ -86,20 +82,28 @@ function App() {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
       setErrorLocation(undefined)
-            return
+      return
+    }
+
+    // 大文件提示
+    const bytes = new Blob([inputJson]).size
+    if (bytes > 1024 * 1024) {
+      setLoadingMessage(`正在验证 ${(bytes / (1024 * 1024)).toFixed(2)} MB JSON...`)
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
     setErrorLocation(undefined)
-    
+    setProcessingTimeMs(undefined)
+
     try {
       const result = await jsonService.validateJson(inputJson)
 
       if (isSuccess(result)) {
         // 验证成功,更新输出
         setValidationStatus('success')
+        setProcessingTimeMs(result.processing_time_ms)
         setOutputState({
           value: JSON.stringify(result.data, null, 2),
           isStale: false,
@@ -154,6 +158,7 @@ function App() {
       }
     } finally {
       setIsProcessing(false)
+      setLoadingMessage(undefined)
     }
   }
 
@@ -170,19 +175,27 @@ function App() {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
       setErrorLocation(undefined)
-            return
+      return
+    }
+
+    // 大文件提示
+    const bytes = new Blob([inputJson]).size
+    if (bytes > 1024 * 1024) {
+      setLoadingMessage(`正在格式化 ${(bytes / (1024 * 1024)).toFixed(2)} MB JSON...`)
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
     setErrorLocation(undefined)
-    
+    setProcessingTimeMs(undefined)
+
     try {
       const result = await jsonService.formatJson(inputJson, formattingOptions)
 
       if (isFormattingSuccess(result)) {
         setValidationStatus('success')
+        setProcessingTimeMs(result.processing_time_ms)
         setOutputState({
           value: result.formatted,
           isStale: false,
@@ -215,6 +228,7 @@ function App() {
       }
     } finally {
       setIsProcessing(false)
+      setLoadingMessage(undefined)
     }
   }
 
@@ -223,19 +237,27 @@ function App() {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
       setErrorLocation(undefined)
-            return
+      return
+    }
+
+    // 大文件提示
+    const bytes = new Blob([inputJson]).size
+    if (bytes > 1024 * 1024) {
+      setLoadingMessage(`正在压缩 ${(bytes / (1024 * 1024)).toFixed(2)} MB JSON...`)
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
     setErrorLocation(undefined)
-    
+    setProcessingTimeMs(undefined)
+
     try {
       const result = await jsonService.minifyJson(inputJson)
 
       if (isFormattingSuccess(result)) {
         setValidationStatus('success')
+        setProcessingTimeMs(result.processing_time_ms)
         setOutputState({
           value: result.formatted,
           isStale: false,
@@ -268,6 +290,7 @@ function App() {
       }
     } finally {
       setIsProcessing(false)
+      setLoadingMessage(undefined)
     }
   }
 
@@ -462,6 +485,7 @@ function App() {
         onFormattingOptionsChange={setFormattingOptions}
         autoValidate={autoValidate}
         onAutoValidateChange={setAutoValidate}
+        processingTimeMs={processingTimeMs}
       />
 
       <main className="app-main">
@@ -500,11 +524,18 @@ function App() {
         <p>Version 0.1.0 | ztao8607@gmail.com</p>
       </footer>
 
-      {/* 快捷键帮助对话框 */}
-      <ShortcutsHelp
-        isOpen={showShortcutsHelp}
-        onClose={() => setShowShortcutsHelp(false)}
-      />
+      {/* 快捷键帮助对话框 - 懒加载 */}
+      <Suspense fallback={null}>
+        {showShortcutsHelp && (
+          <ShortcutsHelp
+            isOpen={showShortcutsHelp}
+            onClose={() => setShowShortcutsHelp(false)}
+          />
+        )}
+      </Suspense>
+
+      {/* 全局加载遮罩 */}
+      <LoadingOverlay isLoading={isProcessing && !!loadingMessage} message={loadingMessage} />
     </div>
   )
 }

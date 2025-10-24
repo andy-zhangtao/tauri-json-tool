@@ -1,4 +1,5 @@
 use crate::models::validation::ValidationResult;
+use std::time::Instant;
 
 /// JSON 最大允许大小：5 MB
 const MAX_JSON_SIZE: usize = 5 * 1024 * 1024;
@@ -11,6 +12,7 @@ const MAX_JSON_SIZE: usize = 5 * 1024 * 1024;
 /// # Returns
 /// 验证结果，包含成功的数据或错误信息
 pub fn validate_json(input: &str) -> ValidationResult {
+    let start = Instant::now();
     // 检查输入大小
     if input.len() > MAX_JSON_SIZE {
         return ValidationResult::Error {
@@ -34,9 +36,13 @@ pub fn validate_json(input: &str) -> ValidationResult {
 
     // 尝试解析 JSON
     match serde_json::from_str::<serde_json::Value>(input) {
-        Ok(value) => ValidationResult::Success {
-            data: value,
-            size: input.len(),
+        Ok(value) => {
+            let duration = start.elapsed();
+            ValidationResult::Success {
+                data: value,
+                size: input.len(),
+                processing_time_ms: duration.as_millis() as u64,
+            }
         },
         Err(error) => {
             // 提取错误位置

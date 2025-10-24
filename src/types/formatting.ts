@@ -10,6 +10,7 @@ export type FormattingResult =
       type: 'Success'
       formatted: string
       size: number
+      processing_time_ms: number
     }
   | {
       type: 'Error'

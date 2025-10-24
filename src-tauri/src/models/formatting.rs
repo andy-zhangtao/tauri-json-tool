@@ -39,6 +39,8 @@ pub enum FormattingResult {
         formatted: String,
         /// 输出大小（字节）
         size: usize,
+        /// 处理时间（毫秒）
+        processing_time_ms: u64,
     },
     /// 格式化失败
     Error {

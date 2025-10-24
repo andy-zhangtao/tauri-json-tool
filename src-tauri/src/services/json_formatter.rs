@@ -1,4 +1,5 @@
 use crate::models::formatting::{FormattingOptions, FormattingResult};
+use std::time::Instant;
 
 /// JSON 最大允许大小：5 MB
 const MAX_JSON_SIZE: usize = 5 * 1024 * 1024;
@@ -12,6 +13,7 @@ const MAX_JSON_SIZE: usize = 5 * 1024 * 1024;
 /// # Returns
 /// 格式化结果，包含格式化后的字符串或错误信息
 pub fn format_json(input: &str, options: &FormattingOptions) -> FormattingResult {
+    let start = Instant::now();
     // 检查输入大小
     if input.len() > MAX_JSON_SIZE {
         return FormattingResult::Error {
@@ -66,9 +68,12 @@ pub fn format_json(input: &str, options: &FormattingOptions) -> FormattingResult
         formatted
     };
 
+    let duration = start.elapsed();
+
     FormattingResult::Success {
         size: output.len(),
         formatted: output,
+        processing_time_ms: duration.as_millis() as u64,
     }
 }
 
@@ -80,6 +85,7 @@ pub fn format_json(input: &str, options: &FormattingOptions) -> FormattingResult
 /// # Returns
 /// 格式化结果，包含压缩后的字符串或错误信息
 pub fn minify_json(input: &str) -> FormattingResult {
+    let start = Instant::now();
     // 检查输入大小
     if input.len() > MAX_JSON_SIZE {
         return FormattingResult::Error {
@@ -117,9 +123,12 @@ pub fn minify_json(input: &str) -> FormattingResult {
         }
     };
 
+    let duration = start.elapsed();
+
     FormattingResult::Success {
         size: minified.len(),
         formatted: minified,
+        processing_time_ms: duration.as_millis() as u64,
     }
 }
 

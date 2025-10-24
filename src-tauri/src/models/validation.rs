@@ -9,6 +9,8 @@ pub enum ValidationResult {
         data: serde_json::Value,
         /// 输入大小（字节）
         size: usize,
+        /// 处理时间（毫秒）
+        processing_time_ms: u64,
     },
     Error {
         /// 错误消息

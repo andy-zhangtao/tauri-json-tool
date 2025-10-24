@@ -17,6 +17,7 @@ export type ValidationResult =
       type: 'Success'
       data: unknown
       size: number
+      processing_time_ms: number
     }
   | {
       type: 'Error'

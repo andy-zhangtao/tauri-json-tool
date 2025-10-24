@@ -15,6 +15,7 @@ interface ToolbarProps {
   onFormattingOptionsChange: (options: FormattingOptions) => void
   autoValidate: boolean
   onAutoValidateChange: (enabled: boolean) => void
+  processingTimeMs?: number
 }
 
 export function Toolbar({
@@ -31,6 +32,7 @@ export function Toolbar({
   onFormattingOptionsChange,
   autoValidate,
   onAutoValidateChange,
+  processingTimeMs,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -141,7 +143,14 @@ export function Toolbar({
         <div className={`status-indicator status-${validationStatus}`}>
           {validationStatus === 'idle' && '⚪ 未验证'}
           {validationStatus === 'validating' && '⏳ 验证中...'}
-          {validationStatus === 'success' && '✓ JSON 有效'}
+          {validationStatus === 'success' && (
+            <>
+              ✓ JSON 有效
+              {processingTimeMs !== undefined && (
+                <span className="processing-time">({processingTimeMs}ms)</span>
+              )}
+            </>
+          )}
           {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
         <ThemeToggle />
