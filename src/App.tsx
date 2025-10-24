@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { JsonPanel } from './components/JsonPanel'
 import { Toolbar } from './components/Toolbar'
 import { useDebounce } from './hooks/useDebounce'
+import { useCopyToClipboard } from './hooks/useCopyToClipboard'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { ErrorLocation } from './hooks/useErrorHighlight'
 import { usePreferences } from './hooks/usePreferences'
 import { jsonService } from './services/jsonService'
@@ -35,6 +37,17 @@ function App() {
     setAutoValidate,
     setFormattingOptions,
   } = usePreferences()
+
+  // 剪贴板功能
+  const {
+    copyState: inputCopyState,
+    copyToClipboard: copyInput,
+  } = useCopyToClipboard()
+
+  const {
+    copyState: outputCopyState,
+    copyToClipboard: copyOutput,
+  } = useCopyToClipboard()
 
   // 对输入进行防抖处理(500ms)
   const debouncedInputJson = useDebounce(inputJson, 500)
@@ -258,6 +271,34 @@ function App() {
     }
   }
 
+  // 复制输入内容
+  const handleCopyInput = useCallback(async () => {
+    await copyInput(inputJson)
+  }, [inputJson, copyInput])
+
+  // 复制输出内容
+  const handleCopyOutput = useCallback(async () => {
+    await copyOutput(outputState.value)
+  }, [outputState.value, copyOutput])
+
+  // 注册键盘快捷键
+  useKeyboardShortcuts([
+    {
+      key: 'i',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleCopyInput,
+      description: '复制输入内容',
+    },
+    {
+      key: 'o',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleCopyOutput,
+      description: '复制输出内容',
+    },
+  ])
+
   return (
     <div className="app">
       <header className="app-header">
@@ -289,6 +330,8 @@ function App() {
             errorLocation={errorLocation}
             lineCount={inputStats.lines}
             charCount={inputStats.chars}
+            onCopy={handleCopyInput}
+            copyState={inputCopyState}
           />
 
           <JsonPanel
@@ -300,6 +343,8 @@ function App() {
             staleMessage="此输出基于之前的有效输入"
             lineCount={outputStats.lines}
             charCount={outputStats.chars}
+            onCopy={handleCopyOutput}
+            copyState={outputCopyState}
           />
         </div>
       </main>

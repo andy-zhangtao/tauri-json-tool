@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useErrorHighlight, ErrorLocation, scrollToError } from '../hooks/useErrorHighlight'
+import { CopyState } from '../hooks/useCopyToClipboard'
 
 interface JsonPanelProps {
   title: string
@@ -13,6 +14,8 @@ interface JsonPanelProps {
   staleMessage?: string
   lineCount?: number
   charCount?: number
+  onCopy?: () => void
+  copyState?: CopyState
 }
 
 export function JsonPanel({
@@ -27,6 +30,8 @@ export function JsonPanel({
   staleMessage,
   lineCount,
   charCount,
+  onCopy,
+  copyState = 'idle',
 }: JsonPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -51,16 +56,44 @@ export function JsonPanel({
     }
   }
 
+  // 复制按钮内容
+  const getCopyButtonContent = () => {
+    switch (copyState) {
+      case 'copying':
+        return '⏳ 复制中...'
+      case 'success':
+        return '✓ 已复制'
+      case 'error':
+        return '✗ 失败'
+      default:
+        return '📋 复制'
+    }
+  }
+
   return (
     <div className={`json-panel ${isStale ? 'stale' : ''}`}>
       <div className="panel-header">
-        <h3>
-          {title}
-          {isStale && <span className="stale-badge">⚠ 过时</span>}
-        </h3>
-        <div className="panel-meta">
-          {lineCount !== undefined && <span>{lineCount} 行</span>}
-          {charCount !== undefined && <span>{charCount} 字符</span>}
+        <div className="panel-header-left">
+          <h3>
+            {title}
+            {isStale && <span className="stale-badge">⚠ 过时</span>}
+          </h3>
+        </div>
+        <div className="panel-header-right">
+          <div className="panel-meta">
+            {lineCount !== undefined && <span>{lineCount} 行</span>}
+            {charCount !== undefined && <span>{charCount} 字符</span>}
+          </div>
+          {onCopy && (
+            <button
+              className={`copy-button copy-button-${copyState}`}
+              onClick={onCopy}
+              disabled={copyState === 'copying' || !value}
+              title={`复制到剪贴板 (${readOnly ? 'Cmd/Ctrl+Shift+O' : 'Cmd/Ctrl+Shift+I'})`}
+            >
+              {getCopyButtonContent()}
+            </button>
+          )}
         </div>
       </div>
 

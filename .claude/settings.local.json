@@ -14,7 +14,8 @@
       "Bash(npm run tauri:dev:*)",
       "Bash(npm run lint:*)",
       "Bash(cargo test:*)",
-      "Bash($HOME/.cargo/bin/cargo test:*)"
+      "Bash($HOME/.cargo/bin/cargo test:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
