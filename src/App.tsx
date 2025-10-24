@@ -13,6 +13,7 @@ import { fileService } from './services/fileService'
 import { isFormattingSuccess } from './types/formatting'
 import { isError, isSuccess } from './types/validation'
 import { extractErrorContext } from './utils/errorParser'
+import { calculateJsonMetrics } from './utils/metricsCalculator'
 
 interface OutputState {
   value: string
@@ -58,19 +59,26 @@ function App() {
   // 对输入进行防抖处理(500ms)
   const debouncedInputJson = useDebounce(inputJson, 500)
 
-  // 计算输入的行数和字符数
-  const inputStats = useMemo(() => {
-    const lines = inputJson.split('\n').length
-    const chars = inputJson.length
-    return { lines, chars }
+  // 计算输入的完整指标
+  const inputMetrics = useMemo(() => {
+    return calculateJsonMetrics(inputJson)
   }, [inputJson])
 
-  // 计算输出的行数和字符数
-  const outputStats = useMemo(() => {
-    const lines = outputState.value.split('\n').length
-    const chars = outputState.value.length
-    return { lines, chars }
+  // 计算输出的完整指标
+  const outputMetrics = useMemo(() => {
+    return calculateJsonMetrics(outputState.value)
   }, [outputState.value])
+
+  // 向后兼容：保留旧的 stats 对象（以防其他地方使用）
+  const inputStats = useMemo(() => ({
+    lines: inputMetrics.lines,
+    chars: inputMetrics.chars,
+  }), [inputMetrics])
+
+  const outputStats = useMemo(() => ({
+    lines: outputMetrics.lines,
+    chars: outputMetrics.chars,
+  }), [outputMetrics])
 
   // 验证函数
   const handleValidate = async () => {
@@ -465,8 +473,7 @@ function App() {
             placeholder="在此输入或粘贴 JSON..."
             error={validationStatus === 'error' ? errorMessage : undefined}
             errorLocation={errorLocation}
-            lineCount={inputStats.lines}
-            charCount={inputStats.chars}
+            metrics={inputMetrics}
             onCopy={handleCopyInput}
             copyState={inputCopyState}
             showEmptyState={true}
@@ -480,8 +487,7 @@ function App() {
             placeholder="处理结果将显示在这里..."
             isStale={outputState.isStale}
             staleMessage="此输出基于之前的有效输入"
-            lineCount={outputStats.lines}
-            charCount={outputStats.chars}
+            metrics={outputMetrics}
             onCopy={handleCopyOutput}
             copyState={outputCopyState}
             showEmptyState={true}

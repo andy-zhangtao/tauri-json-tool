@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useErrorHighlight, ErrorLocation, scrollToError } from '../hooks/useErrorHighlight'
 import { CopyState } from '../hooks/useCopyToClipboard'
 import { EmptyState } from './EmptyState'
+import { MetricsDisplay } from './MetricsDisplay'
+import { JsonMetrics } from '../types/metrics'
 
 interface JsonPanelProps {
   title: string
@@ -13,8 +15,9 @@ interface JsonPanelProps {
   errorLocation?: ErrorLocation
   isStale?: boolean
   staleMessage?: string
-  lineCount?: number
-  charCount?: number
+  lineCount?: number // 已弃用，使用 metrics
+  charCount?: number // 已弃用，使用 metrics
+  metrics?: JsonMetrics // 新增：完整的指标对象
   onCopy?: () => void
   copyState?: CopyState
   showEmptyState?: boolean
@@ -31,8 +34,9 @@ export function JsonPanel({
   errorLocation,
   isStale = false,
   staleMessage,
-  lineCount,
-  charCount,
+  lineCount, // 向后兼容
+  charCount, // 向后兼容
+  metrics,
   onCopy,
   copyState = 'idle',
   showEmptyState = false,
@@ -85,10 +89,17 @@ export function JsonPanel({
           </h3>
         </div>
         <div className="panel-header-right">
-          <div className="panel-meta">
-            {lineCount !== undefined && <span>{lineCount} 行</span>}
-            {charCount !== undefined && <span>{charCount} 字符</span>}
-          </div>
+          {/* 显示指标（优先使用新的 metrics，向后兼容旧的 lineCount/charCount）*/}
+          {metrics ? (
+            <MetricsDisplay metrics={metrics} mode="compact" />
+          ) : (
+            lineCount !== undefined && charCount !== undefined && (
+              <div className="panel-meta">
+                <span>{lineCount} 行</span>
+                <span>{charCount} 字符</span>
+              </div>
+            )
+          )}
           {onCopy && (
             <button
               className={`copy-button copy-button-${copyState}`}
