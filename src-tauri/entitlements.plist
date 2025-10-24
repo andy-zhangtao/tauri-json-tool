@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 允许网络通信 (如果需要更新检查或 API 调用) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- 允许用户选择的文件读写 (导入/导出 JSON 文件) -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- 禁用 App Sandbox (简化文件访问,适用于 Developer ID 分发) -->
+    <!-- <key>com.apple.security.app-sandbox</key>
+    <false/> -->
+
+    <!-- 如果启用了 App Sandbox,需要以下权限: -->
+    <!--
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    -->
+
+    <!-- Hardened Runtime 配置 -->
+    <!-- 允许 JIT 编译 (Tauri WebView 需要) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- 允许未签名的可执行内存 (WebView 需要) -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- 禁用库验证 (允许 Tauri 加载系统库) -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+</dict>
+</plist>

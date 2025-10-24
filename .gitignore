@@ -41,3 +41,24 @@ target
 .env
 .env.local
 .env.*.local
+
+# Code signing & certificates (NEVER commit these!)
+*.key
+*.csr
+*.cer
+*.p12
+*.mobileprovision
+*.certSigningRequest
+
+# Build artifacts & distribution
+dist-signed/
+*.dmg
+*.app
+*.pkg
+*.dmg.sha256
+
+# Apple notarization credentials
+.notarization-credentials
+
+# Claude Code local settings
+.claude/settings.local.json
