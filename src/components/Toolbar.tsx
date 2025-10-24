@@ -1,4 +1,5 @@
 import { type FormattingOptions } from '../types/formatting'
+import { ThemeToggle } from './ThemeToggle'
 
 interface ToolbarProps {
   onValidate: () => void
@@ -141,6 +142,7 @@ export function Toolbar({
           {validationStatus === 'success' && '✓ JSON 有效'}
           {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
+        <ThemeToggle />
       </div>
     </div>
   )

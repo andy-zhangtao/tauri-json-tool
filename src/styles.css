@@ -1,4 +1,6 @@
-:root {
+/* 深色主题 (默认) */
+:root,
+[data-theme='dark'] {
   /* 颜色变量 - 深色主题 */
   --bg-primary: #1a1b26;
   --bg-secondary: #24283b;
@@ -26,10 +28,29 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 浅色主题 */
+[data-theme='light'] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e5e5ea;
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --text-muted: #86868b;
+  --border-color: #d2d2d7;
+  --accent-primary: #007aff;
+  --accent-success: #34c759;
+  --accent-error: #ff3b30;
+  --accent-warning: #ff9500;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* 主题切换平滑过渡 */
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease;
 }
 
 body {
@@ -710,23 +731,56 @@ button:disabled {
   }
 }
 
-/* 浅色主题 */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg-primary: #f5f5f7;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #e5e5ea;
-    --text-primary: #1d1d1f;
-    --text-secondary: #515154;
-    --text-muted: #86868b;
-    --border-color: #d2d2d7;
-    --accent-primary: #007aff;
-    --accent-success: #34c759;
-    --accent-error: #ff3b30;
-    --accent-warning: #ff9500;
-  }
+/* 浅色主题的 placeholder 颜色 */
+[data-theme='light'] .json-textarea::placeholder {
+  color: var(--text-muted);
+}
 
-  .json-textarea::placeholder {
-    color: var(--text-muted);
+/* 主题切换按钮 */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  /* 覆盖全局 transition,保留 transform */
+  transition: background-color 0.2s ease,
+              color 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+.theme-icon {
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.theme-label {
+  font-size: 13px;
+}
+
+/* 响应式: 小屏幕只显示图标 */
+@media (max-width: 768px) {
+  .theme-toggle .theme-label {
+    display: none;
   }
 }

@@ -4,6 +4,7 @@ import { Toolbar } from './components/Toolbar'
 import { useDebounce } from './hooks/useDebounce'
 import { useCopyToClipboard } from './hooks/useCopyToClipboard'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { useTheme } from './hooks/useTheme'
 import { ErrorLocation } from './hooks/useErrorHighlight'
 import { usePreferences } from './hooks/usePreferences'
 import { jsonService } from './services/jsonService'
@@ -19,6 +20,9 @@ interface OutputState {
 }
 
 function App() {
+  // 初始化主题 (必须在顶层调用,确保主题在应用启动时就生效)
+  useTheme()
+
   const [inputJson, setInputJson] = useState('')
   const [outputState, setOutputState] = useState<OutputState>({
     value: '',

@@ -18,7 +18,9 @@
       "Bash(cat:*)",
       "Bash(cargo add:*)",
       "Bash(RUST_BACKTRACE=1 $HOME/.cargo/bin/cargo test:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(theme): 实现三模式主题切换系统 (Task 12)\n\n新增功能:\n- 三种主题模式: system (自动) / light (浅色) / dark (深色)\n- 主题循环切换按钮 (💻/☀️/🌙)\n- localStorage 持久化 (key: json-tool-theme)\n- 系统主题动态响应 (system 模式下)\n- 平滑主题切换动画 (0.3s CSS transition)\n\n技术实现:\n- useTheme Hook: 主题状态管理\n- data-theme 属性驱动的 CSS 主题系统\n- MediaQuery 监听系统主题变化\n- 完整的 TypeScript 类型定义\n- 响应式设计 (小屏幕只显示图标)\n- 可访问性支持 (aria-label, title)\n\n文件变更:\n新增:\n- src/types/theme.ts (主题类型定义)\n- src/hooks/useTheme.ts (主题管理 Hook)\n- src/components/ThemeToggle.tsx (主题切换按钮)\n- docs/task12-design.md (设计文档)\n- docs/task12-completion-report.md (完成报告)\n\n修改:\n- src/styles.css (添加 data-theme 选择器 + 动画)\n- src/components/Toolbar.tsx (集成主题切换按钮)\n- src/App.tsx (初始化主题)\n- docs/TODO.md (更新进度: 11/19 任务完成, 58%)\n\n验收标准:\n✅ 应用启动时检测系统主题并应用\n✅ 手动切换覆盖系统主题并持久化\n✅ 对比度符合可访问性指南\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
