@@ -17,7 +17,19 @@ import { calculateJsonMetrics } from './utils/metricsCalculator'
 import { migrateFromLocalStorage } from './utils/migration'
 
 // 懒加载非关键组件
-const ShortcutsHelp = lazy(() => import('./components/ShortcutsHelp').then(module => ({ default: module.ShortcutsHelp })))
+const ShortcutsHelp = lazy(() =>
+  import('./components/ShortcutsHelp').then((module) => ({
+    default: module.ShortcutsHelp,
+  }))
+)
+const LogViewer = lazy(() =>
+  import('./components/LogViewer').then((module) => ({ default: module.LogViewer }))
+)
+const IssueReporter = lazy(() =>
+  import('./components/IssueReporter').then((module) => ({
+    default: module.IssueReporter,
+  }))
+)
 
 interface OutputState {
   value: string
@@ -396,6 +408,8 @@ function App() {
 
   // 快捷键帮助对话框状态
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+  const [showLogViewer, setShowLogViewer] = useState(false)
+  const [showIssueReporter, setShowIssueReporter] = useState(false)
 
   // 注册键盘快捷键
   useKeyboardShortcuts([
@@ -487,6 +501,8 @@ function App() {
         onImport={handleImport}
         onExport={handleExport}
         onShowShortcutsHelp={() => setShowShortcutsHelp(true)}
+        onShowLogViewer={() => setShowLogViewer(true)}
+        onShowIssueReporter={() => setShowIssueReporter(true)}
         isProcessing={isProcessing}
         validationStatus={validationStatus}
         formattingOptions={formattingOptions}
@@ -540,6 +556,26 @@ function App() {
           <ShortcutsHelp
             isOpen={showShortcutsHelp}
             onClose={() => setShowShortcutsHelp(false)}
+          />
+        )}
+      </Suspense>
+
+      {/* 日志查看器 - 懒加载 */}
+      <Suspense fallback={null}>
+        {showLogViewer && (
+          <LogViewer
+            isOpen={showLogViewer}
+            onClose={() => setShowLogViewer(false)}
+          />
+        )}
+      </Suspense>
+
+      {/* 问题报告 - 懒加载 */}
+      <Suspense fallback={null}>
+        {showIssueReporter && (
+          <IssueReporter
+            isOpen={showIssueReporter}
+            onClose={() => setShowIssueReporter(false)}
           />
         )}
       </Suspense>

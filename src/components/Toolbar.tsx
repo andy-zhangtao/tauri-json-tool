@@ -10,6 +10,8 @@ interface ToolbarProps {
   onImport: () => void
   onExport: () => void
   onShowShortcutsHelp?: () => void
+  onShowLogViewer?: () => void
+  onShowIssueReporter?: () => void
   isProcessing: boolean
   validationStatus: 'idle' | 'validating' | 'success' | 'error'
   formattingOptions: FormattingOptions
@@ -29,6 +31,8 @@ export function Toolbar({
   onImport,
   onExport,
   onShowShortcutsHelp,
+  onShowLogViewer,
+  onShowIssueReporter,
   isProcessing,
   validationStatus,
   formattingOptions,
@@ -159,6 +163,26 @@ export function Toolbar({
           {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
         <ThemeToggle themeMode={themeMode} onToggle={onThemeToggle} />
+        {onShowLogViewer && (
+          <button
+            className="btn-icon"
+            onClick={onShowLogViewer}
+            title="查看操作日志"
+            aria-label="查看操作日志"
+          >
+            📋
+          </button>
+        )}
+        {onShowIssueReporter && (
+          <button
+            className="btn-icon"
+            onClick={onShowIssueReporter}
+            title="报告问题"
+            aria-label="报告问题"
+          >
+            🐛
+          </button>
+        )}
         {onShowShortcutsHelp && (
           <button
             className="btn-icon"

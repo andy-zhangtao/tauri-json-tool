@@ -27,3 +27,5 @@ tauri-plugin-log = "2"
 tauri-plugin-dialog = "2.4.0"
 tauri-plugin-fs = "2.4.2"
 tauri-plugin-store = "2.4.0"
+tauri-plugin-shell = "2"
+chrono = { version = "0.4", features = ["serde"] }
