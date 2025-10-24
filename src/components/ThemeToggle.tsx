@@ -1,4 +1,3 @@
-import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../types/theme'
 
 /**
@@ -19,6 +18,11 @@ const THEME_LABELS: Record<ThemeMode, string> = {
   dark: '深色',
 }
 
+interface ThemeToggleProps {
+  themeMode: ThemeMode
+  onToggle: () => void
+}
+
 /**
  * 主题切换按钮组件
  *
@@ -27,13 +31,11 @@ const THEME_LABELS: Record<ThemeMode, string> = {
  * - 浅色 (强制浅色)
  * - 深色 (强制深色)
  */
-export function ThemeToggle() {
-  const { themeMode, toggleTheme } = useTheme()
-
+export function ThemeToggle({ themeMode, onToggle }: ThemeToggleProps) {
   return (
     <button
       className="theme-toggle"
-      onClick={toggleTheme}
+      onClick={onToggle}
       title={`当前主题: ${THEME_LABELS[themeMode]} (点击切换)`}
       aria-label={`切换主题，当前为${THEME_LABELS[themeMode]}模式`}
       type="button"

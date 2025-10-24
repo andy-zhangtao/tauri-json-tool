@@ -14,6 +14,7 @@ import { isFormattingSuccess } from './types/formatting'
 import { isError, isSuccess } from './types/validation'
 import { extractErrorContext } from './utils/errorParser'
 import { calculateJsonMetrics } from './utils/metricsCalculator'
+import { migrateFromLocalStorage } from './utils/migration'
 
 // 懒加载非关键组件
 const ShortcutsHelp = lazy(() => import('./components/ShortcutsHelp').then(module => ({ default: module.ShortcutsHelp })))
@@ -25,8 +26,23 @@ interface OutputState {
 }
 
 function App() {
-  // 初始化主题 (必须在顶层调用,确保主题在应用启动时就生效)
-  useTheme()
+  // 使用偏好管理 Hook
+  const {
+    theme,
+    autoValidate,
+    formattingOptions,
+    setTheme,
+    setAutoValidate,
+    setFormattingOptions,
+  } = usePreferences()
+
+  // 主题管理 (简化版,不再负责持久化)
+  const { toggleTheme } = useTheme(theme, setTheme)
+
+  // 迁移 localStorage 数据到 Tauri Store (仅在首次启动时执行一次)
+  useEffect(() => {
+    migrateFromLocalStorage()
+  }, [])
 
   const [inputJson, setInputJson] = useState('')
   const [outputState, setOutputState] = useState<OutputState>({
@@ -41,14 +57,6 @@ function App() {
   const [errorLocation, setErrorLocation] = useState<ErrorLocation | undefined>(undefined)
   const [loadingMessage, setLoadingMessage] = useState<string>()
   const [processingTimeMs, setProcessingTimeMs] = useState<number>()
-
-  // 使用偏好管理 Hook
-  const {
-    autoValidate,
-    formattingOptions,
-    setAutoValidate,
-    setFormattingOptions,
-  } = usePreferences()
 
   // 剪贴板功能
   const {
@@ -486,6 +494,8 @@ function App() {
         autoValidate={autoValidate}
         onAutoValidateChange={setAutoValidate}
         processingTimeMs={processingTimeMs}
+        themeMode={theme}
+        onThemeToggle={toggleTheme}
       />
 
       <main className="app-main">

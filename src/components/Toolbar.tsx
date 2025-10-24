@@ -1,4 +1,5 @@
 import { type FormattingOptions } from '../types/formatting'
+import { type ThemeMode } from '../types/theme'
 import { ThemeToggle } from './ThemeToggle'
 
 interface ToolbarProps {
@@ -16,6 +17,8 @@ interface ToolbarProps {
   autoValidate: boolean
   onAutoValidateChange: (enabled: boolean) => void
   processingTimeMs?: number
+  themeMode: ThemeMode
+  onThemeToggle: () => void
 }
 
 export function Toolbar({
@@ -33,6 +36,8 @@ export function Toolbar({
   autoValidate,
   onAutoValidateChange,
   processingTimeMs,
+  themeMode,
+  onThemeToggle,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -153,7 +158,7 @@ export function Toolbar({
           )}
           {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
-        <ThemeToggle />
+        <ThemeToggle themeMode={themeMode} onToggle={onThemeToggle} />
         {onShowShortcutsHelp && (
           <button
             className="btn-icon"
