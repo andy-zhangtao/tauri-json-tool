@@ -8,6 +8,7 @@ interface ToolbarProps {
   onClear: () => void
   onImport: () => void
   onExport: () => void
+  onShowShortcutsHelp?: () => void
   isProcessing: boolean
   validationStatus: 'idle' | 'validating' | 'success' | 'error'
   formattingOptions: FormattingOptions
@@ -23,6 +24,7 @@ export function Toolbar({
   onClear,
   onImport,
   onExport,
+  onShowShortcutsHelp,
   isProcessing,
   validationStatus,
   formattingOptions,
@@ -37,7 +39,7 @@ export function Toolbar({
           onClick={onImport}
           disabled={isProcessing}
           className="btn-secondary"
-          title="从文件导入 JSON"
+          title="从文件导入 JSON (⌘⌥I)"
         >
           导入
         </button>
@@ -45,7 +47,7 @@ export function Toolbar({
           onClick={onExport}
           disabled={isProcessing}
           className="btn-secondary"
-          title="导出 JSON 到文件"
+          title="导出 JSON 到文件 (⌘⇧E)"
         >
           导出
         </button>
@@ -56,7 +58,7 @@ export function Toolbar({
           onClick={onValidate}
           disabled={isProcessing}
           className="btn-primary"
-          title="验证 JSON 格式"
+          title="验证 JSON 格式 (⌘⇧V)"
         >
           {isProcessing ? '处理中...' : '验证'}
         </button>
@@ -64,7 +66,7 @@ export function Toolbar({
           onClick={onFormat}
           disabled={isProcessing}
           className="btn-primary"
-          title="美化 JSON"
+          title="美化 JSON (⌘⇧F)"
         >
           格式化
         </button>
@@ -72,7 +74,7 @@ export function Toolbar({
           onClick={onMinify}
           disabled={isProcessing}
           className="btn-primary"
-          title="压缩 JSON"
+          title="压缩 JSON (⌘⇧M)"
         >
           压缩
         </button>
@@ -80,7 +82,7 @@ export function Toolbar({
           onClick={onClear}
           disabled={isProcessing}
           className="btn-secondary"
-          title="清空输入和输出"
+          title="清空输入和输出 (⌘⇧K)"
         >
           清空
         </button>
@@ -143,6 +145,16 @@ export function Toolbar({
           {validationStatus === 'error' && '✗ JSON 无效'}
         </div>
         <ThemeToggle />
+        {onShowShortcutsHelp && (
+          <button
+            className="btn-icon"
+            onClick={onShowShortcutsHelp}
+            title="显示键盘快捷键 (⌘/)"
+            aria-label="显示键盘快捷键"
+          >
+            ?
+          </button>
+        )}
       </div>
     </div>
   )

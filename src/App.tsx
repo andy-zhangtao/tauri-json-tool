@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { JsonPanel } from './components/JsonPanel'
 import { Toolbar } from './components/Toolbar'
+import { ShortcutsHelp } from './components/ShortcutsHelp'
 import { useDebounce } from './hooks/useDebounce'
 import { useCopyToClipboard } from './hooks/useCopyToClipboard'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -354,8 +355,60 @@ function App() {
     await copyOutput(outputState.value)
   }, [outputState.value, copyOutput])
 
+  // 快捷键帮助对话框状态
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
+
   // 注册键盘快捷键
   useKeyboardShortcuts([
+    // 验证
+    {
+      key: 'v',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleValidate,
+      description: '验证 JSON',
+    },
+    // 格式化
+    {
+      key: 'f',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleFormat,
+      description: '格式化 JSON',
+    },
+    // 压缩
+    {
+      key: 'm',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleMinify,
+      description: '压缩 JSON',
+    },
+    // 清除
+    {
+      key: 'k',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleClear,
+      description: '清除输入',
+    },
+    // 导入
+    {
+      key: 'i',
+      metaKey: true,
+      altKey: true,
+      handler: handleImport,
+      description: '导入文件',
+    },
+    // 导出
+    {
+      key: 'e',
+      metaKey: true,
+      shiftKey: true,
+      handler: handleExport,
+      description: '导出文件',
+    },
+    // 复制输入
     {
       key: 'i',
       metaKey: true,
@@ -363,12 +416,20 @@ function App() {
       handler: handleCopyInput,
       description: '复制输入内容',
     },
+    // 复制输出
     {
       key: 'o',
       metaKey: true,
       shiftKey: true,
       handler: handleCopyOutput,
       description: '复制输出内容',
+    },
+    // 显示快捷键帮助
+    {
+      key: '/',
+      metaKey: true,
+      handler: () => setShowShortcutsHelp(true),
+      description: '显示快捷键',
     },
   ])
 
@@ -386,6 +447,7 @@ function App() {
         onClear={handleClear}
         onImport={handleImport}
         onExport={handleExport}
+        onShowShortcutsHelp={() => setShowShortcutsHelp(true)}
         isProcessing={isProcessing}
         validationStatus={validationStatus}
         formattingOptions={formattingOptions}
@@ -431,6 +493,12 @@ function App() {
       <footer className="app-footer">
         <p>Version 0.1.0 | ztao8607@gmail.com</p>
       </footer>
+
+      {/* 快捷键帮助对话框 */}
+      <ShortcutsHelp
+        isOpen={showShortcutsHelp}
+        onClose={() => setShowShortcutsHelp(false)}
+      />
     </div>
   )
 }
