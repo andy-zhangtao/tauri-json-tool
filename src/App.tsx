@@ -2,19 +2,31 @@ import { useEffect, useMemo, useState } from 'react'
 import { JsonPanel } from './components/JsonPanel'
 import { Toolbar } from './components/Toolbar'
 import { useDebounce } from './hooks/useDebounce'
+import { ErrorLocation } from './hooks/useErrorHighlight'
 import { usePreferences } from './hooks/usePreferences'
 import { jsonService } from './services/jsonService'
 import { isFormattingSuccess } from './types/formatting'
 import { isError, isSuccess } from './types/validation'
+import { extractErrorContext } from './utils/errorParser'
+
+interface OutputState {
+  value: string
+  isStale: boolean
+  lastValidTime?: Date
+}
 
 function App() {
   const [inputJson, setInputJson] = useState('')
-  const [outputJson, setOutputJson] = useState('')
+  const [outputState, setOutputState] = useState<OutputState>({
+    value: '',
+    isStale: false,
+  })
   const [isProcessing, setIsProcessing] = useState(false)
   const [validationStatus, setValidationStatus] = useState<
     'idle' | 'validating' | 'success' | 'error'
   >('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [errorLocation, setErrorLocation] = useState<ErrorLocation | undefined>(undefined)
 
   // 使用偏好管理 Hook
   const {
@@ -36,41 +48,83 @@ function App() {
 
   // 计算输出的行数和字符数
   const outputStats = useMemo(() => {
-    const lines = outputJson.split('\n').length
-    const chars = outputJson.length
+    const lines = outputState.value.split('\n').length
+    const chars = outputState.value.length
     return { lines, chars }
-  }, [outputJson])
+  }, [outputState.value])
 
   // 验证函数
   const handleValidate = async () => {
     if (!inputJson.trim()) {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
-      return
+      setErrorLocation(undefined)
+            return
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
-
+    setErrorLocation(undefined)
+    
     try {
       const result = await jsonService.validateJson(inputJson)
 
       if (isSuccess(result)) {
+        // 验证成功,更新输出
         setValidationStatus('success')
-        setOutputJson(JSON.stringify(result.data, null, 2))
+        setOutputState({
+          value: JSON.stringify(result.data, null, 2),
+          isStale: false,
+          lastValidTime: new Date(),
+        })
         setErrorMessage('')
-      } else if (isError(result)) {
+        setErrorLocation(undefined)
+              } else if (isError(result)) {
+        // 验证失败
         setValidationStatus('error')
+
+        // 标记输出为过时(如果之前有输出)
+        if (outputState.value) {
+          setOutputState({
+            ...outputState,
+            isStale: true,
+          })
+        }
+
+        // 设置错误信息
         let msg = result.message
         if (result.line && result.column) {
           msg += ` (第 ${result.line} 行, 第 ${result.column} 列)`
         }
         setErrorMessage(msg)
+
+        // 设置错误位置
+        if (result.line) {
+          setErrorLocation({
+            line: result.line,
+            column: result.column,
+          })
+
+          // 提取错误上下文(暂不使用,为未来增强预留)
+          extractErrorContext(
+            inputJson,
+            result.line,
+            result.column
+          )
+        }
       }
     } catch (error) {
       setValidationStatus('error')
       setErrorMessage(`验证失败: ${error}`)
+
+      // 标记输出为过时
+      if (outputState.value) {
+        setOutputState({
+          ...outputState,
+          isStale: true,
+        })
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -88,27 +142,50 @@ function App() {
     if (!inputJson.trim()) {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
-      return
+      setErrorLocation(undefined)
+            return
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
-
+    setErrorLocation(undefined)
+    
     try {
       const result = await jsonService.formatJson(inputJson, formattingOptions)
 
       if (isFormattingSuccess(result)) {
         setValidationStatus('success')
-        setOutputJson(result.formatted)
+        setOutputState({
+          value: result.formatted,
+          isStale: false,
+          lastValidTime: new Date(),
+        })
         setErrorMessage('')
-      } else {
+        setErrorLocation(undefined)
+              } else {
         setValidationStatus('error')
         setErrorMessage(result.message)
+
+        // 标记输出为过时
+        if (outputState.value) {
+          setOutputState({
+            ...outputState,
+            isStale: true,
+          })
+        }
       }
     } catch (error) {
       setValidationStatus('error')
       setErrorMessage(`格式化失败: ${error}`)
+
+      // 标记输出为过时
+      if (outputState.value) {
+        setOutputState({
+          ...outputState,
+          isStale: true,
+        })
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -118,27 +195,50 @@ function App() {
     if (!inputJson.trim()) {
       setErrorMessage('请输入 JSON 内容')
       setValidationStatus('error')
-      return
+      setErrorLocation(undefined)
+            return
     }
 
     setIsProcessing(true)
     setValidationStatus('validating')
     setErrorMessage('')
-
+    setErrorLocation(undefined)
+    
     try {
       const result = await jsonService.minifyJson(inputJson)
 
       if (isFormattingSuccess(result)) {
         setValidationStatus('success')
-        setOutputJson(result.formatted)
+        setOutputState({
+          value: result.formatted,
+          isStale: false,
+          lastValidTime: new Date(),
+        })
         setErrorMessage('')
-      } else {
+        setErrorLocation(undefined)
+              } else {
         setValidationStatus('error')
         setErrorMessage(result.message)
+
+        // 标记输出为过时
+        if (outputState.value) {
+          setOutputState({
+            ...outputState,
+            isStale: true,
+          })
+        }
       }
     } catch (error) {
       setValidationStatus('error')
       setErrorMessage(`压缩失败: ${error}`)
+
+      // 标记输出为过时
+      if (outputState.value) {
+        setOutputState({
+          ...outputState,
+          isStale: true,
+        })
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -147,12 +247,13 @@ function App() {
   const handleClear = () => {
     if (
       !inputJson &&
-      !outputJson ||
+      !outputState.value ||
       window.confirm('确定要清空所有内容吗?')
     ) {
       setInputJson('')
-      setOutputJson('')
+      setOutputState({ value: '', isStale: false })
       setErrorMessage('')
+      setErrorLocation(undefined)
       setValidationStatus('idle')
     }
   }
@@ -185,15 +286,18 @@ function App() {
             onChange={setInputJson}
             placeholder="在此输入或粘贴 JSON..."
             error={validationStatus === 'error' ? errorMessage : undefined}
+            errorLocation={errorLocation}
             lineCount={inputStats.lines}
             charCount={inputStats.chars}
           />
 
           <JsonPanel
             title="输出"
-            value={outputJson}
+            value={outputState.value}
             readOnly
             placeholder="处理结果将显示在这里..."
+            isStale={outputState.isStale}
+            staleMessage="此输出基于之前的有效输入"
             lineCount={outputStats.lines}
             charCount={outputStats.chars}
           />

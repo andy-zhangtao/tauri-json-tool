@@ -1,4 +1,15 @@
 /**
+ * 错误上下文信息
+ */
+export interface ErrorContext {
+  beforeLines: string[]  // 错误前几行
+  errorLine: string      // 错误所在行
+  afterLines: string[]   // 错误后几行
+  errorChar?: string     // 错误字符
+  suggestion?: string    // 修复建议
+}
+
+/**
  * JSON 验证结果类型
  */
 export type ValidationResult =
@@ -12,6 +23,7 @@ export type ValidationResult =
       message: string
       line?: number
       column?: number
+      context?: ErrorContext
     }
 
 /**

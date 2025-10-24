@@ -4,10 +4,10 @@
 
 ## 📊 总体进度
 
-- **已完成**: 4/19 任务
+- **已完成**: 6/19 任务
 - **进行中**: 0/19 任务
-- **待开始**: 15/19 任务
-- **完成度**: 21%
+- **待开始**: 13/19 任务
+- **完成度**: 32%
 
 ---
 
@@ -74,35 +74,55 @@
 
 ---
 
+### ~~Task 5: Validation Workflow Controls~~
+
+**功能描述**: 实现用户控件以手动触发验证,可选择在输入更改时自动验证,并提供清晰的成功或失败反馈。
+
+**验收标准**:
+
+- ✅ 验证按钮运行验证并更新状态指示器
+- ✅ 自动验证切换保持用户选择,并在启用时重新验证输入编辑
+- ✅ 成功状态显示确认文本/图标;失败状态显示错误摘要
+
+**实现文件**:
+
+- `src/hooks/useDebounce.ts` (防抖 Hook)
+- `src/hooks/usePreferences.ts` (偏好管理 Hook)
+- `src/utils/localStorage.ts` (localStorage 工具)
+- `src/App.tsx` (自动验证逻辑)
+- `src/components/Toolbar.tsx` (自动验证开关)
+- `src/styles.css` (验证状态样式)
+
+---
+
 ## 🔄 进行中任务
 
-_当前无进行中任务_
+当前无进行中任务
 
 ---
 
 ## 📋 待开始任务
 
-### Task 5: Validation Workflow Controls
-**功能描述**: 实现用户控件以手动触发验证,可选择在输入更改时自动验证,并提供清晰的成功或失败反馈。
+### ~~Task 6: Error Highlighting & Messaging~~
 
-**验收标准**:
-- [ ] 验证按钮运行验证并更新状态指示器
-- [ ] 自动验证切换保持用户选择,并在启用时重新验证输入编辑
-- [ ] 成功状态显示确认文本/图标;失败状态显示错误摘要
-
-**预计工作量**: 中等
-
----
-
-### Task 6: Error Highlighting & Messaging
 **功能描述**: 显示详细的错误反馈,包括突出显示无效的 JSON 片段,并在问题解决之前保留先前的有效输出。
 
 **验收标准**:
-- [ ] 错误消息包含行/列信息(如果可用)
-- [ ] 输入视图突出显示与错误关联的区域
-- [ ] 在错误期间,先前的格式化输出保持可见但标记为过时
 
-**预计工作量**: 中等
+- ✅ 错误消息包含行/列信息(如果可用)
+- ✅ 输入视图突出显示与错误关联的区域
+- ✅ 在错误期间,先前的格式化输出保持可见但标记为过时
+
+**实现文件**:
+
+- `src/types/validation.ts` (扩展 ErrorContext)
+- `src/utils/errorParser.ts` (错误解析工具)
+- `src/hooks/useErrorHighlight.ts` (错误高亮 Hook)
+- `src/components/CodeSnippet.tsx` (代码片段组件)
+- `src/components/ErrorMessage.tsx` (错误消息组件)
+- `src/components/JsonPanel.tsx` (错误高亮与过时状态)
+- `src/App.tsx` (输出过时状态管理)
+- `src/styles.css` (错误高亮与过时状态样式)
 
 ---
 
@@ -270,9 +290,9 @@ _当前无进行中任务_
 - ✅ Task 3: JSON 格式化引擎
 - ✅ Task 4: 桌面 UI 布局
 
-### Milestone 2: 用户体验增强 (0/6)
-- ⏳ Task 5: 验证工作流控制
-- ⏳ Task 6: 错误高亮与消息
+### Milestone 2: 用户体验增强 (2/6)
+- ✅ Task 5: 验证工作流控制
+- ✅ Task 6: 错误高亮与消息
 - ⏳ Task 7: 格式化操作与偏好
 - ⏳ Task 8: 剪贴板工具
 - ⏳ Task 9: 文件导入导出

@@ -307,6 +307,205 @@ button:disabled {
   font-size: 16px;
 }
 
+/* 错误消息增强 */
+.error-message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+}
+
+.error-jump-btn {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  background-color: var(--accent-error);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.error-jump-btn:hover {
+  opacity: 0.8;
+}
+
+/* 错误高亮层 */
+.error-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.error-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: rgba(247, 118, 142, 0.15);
+  border-left: 3px solid var(--accent-error);
+  transition: all 0.3s ease;
+}
+
+/* 面板内容需要相对定位 */
+.panel-content {
+  position: relative;
+}
+
+/* 过时状态样式 */
+.json-panel.stale .panel-header {
+  background-color: rgba(224, 175, 104, 0.1);
+}
+
+.stale-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  background-color: rgba(224, 175, 104, 0.2);
+  color: var(--accent-warning);
+  font-size: 11px;
+  border-radius: 4px;
+  font-weight: normal;
+}
+
+.json-panel.stale .json-textarea {
+  opacity: 0.6;
+}
+
+.stale-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: rgba(224, 175, 104, 0.1);
+  border-top: 1px solid var(--accent-warning);
+  color: var(--accent-warning);
+  font-size: 12px;
+}
+
+.stale-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+/* 错误消息面板样式 */
+.error-message-panel {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: rgba(247, 118, 142, 0.05);
+  border: 1px solid rgba(247, 118, 142, 0.3);
+  border-radius: 8px;
+}
+
+.error-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--accent-error);
+}
+
+.error-title {
+  font-size: 14px;
+}
+
+.error-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-detail,
+.error-location,
+.error-suggestion {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.error-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jump-button {
+  padding: 2px 8px;
+  background-color: var(--accent-error);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.jump-button:hover {
+  opacity: 0.8;
+}
+
+.error-context {
+  margin-top: 8px;
+}
+
+.error-suggestion {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(224, 175, 104, 0.1);
+  border-left: 3px solid var(--accent-warning);
+  color: var(--text-secondary);
+}
+
+/* 代码片段样式 */
+.code-snippet {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.code-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 0;
+  line-height: 1.6;
+}
+
+.code-line.error-line {
+  background-color: rgba(247, 118, 142, 0.1);
+  margin: 0 -12px;
+  padding: 2px 12px;
+}
+
+.line-number {
+  flex-shrink: 0;
+  width: 30px;
+  text-align: right;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.line-content {
+  flex: 1;
+  color: var(--text-primary);
+  white-space: pre;
+}
+
+.error-marker {
+  margin-left: 8px;
+  color: var(--accent-error);
+  font-weight: 600;
+  font-size: 11px;
+}
+
 /* 底部 */
 .app-footer {
   height: var(--footer-height);
