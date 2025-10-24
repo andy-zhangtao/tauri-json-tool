@@ -259,11 +259,23 @@ function App() {
   }
 
   const handleClear = () => {
-    if (
-      !inputJson &&
-      !outputState.value ||
-      window.confirm('确定要清空所有内容吗?')
-    ) {
+    // 如果已经是空的,不需要确认
+    const isEmpty = !inputJson.trim() && !outputState.value.trim()
+    if (isEmpty) {
+      return
+    }
+
+    // 检查是否有未保存的格式化输出
+    const hasUnsavedOutput = outputState.value && !outputState.isStale
+
+    // 构建确认消息
+    let confirmMessage = '确定要清空所有内容吗?'
+    if (hasUnsavedOutput) {
+      confirmMessage = '当前有格式化的输出尚未导出。确定要清空所有内容吗?'
+    }
+
+    // 显示确认对话框
+    if (window.confirm(confirmMessage)) {
       setInputJson('')
       setOutputState({ value: '', isStale: false })
       setErrorMessage('')
@@ -391,6 +403,8 @@ function App() {
             charCount={inputStats.chars}
             onCopy={handleCopyInput}
             copyState={inputCopyState}
+            showEmptyState={true}
+            emptyStateType="input"
           />
 
           <JsonPanel
@@ -404,6 +418,8 @@ function App() {
             charCount={outputStats.chars}
             onCopy={handleCopyOutput}
             copyState={outputCopyState}
+            showEmptyState={true}
+            emptyStateType="output"
           />
         </div>
       </main>

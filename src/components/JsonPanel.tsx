@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useErrorHighlight, ErrorLocation, scrollToError } from '../hooks/useErrorHighlight'
 import { CopyState } from '../hooks/useCopyToClipboard'
+import { EmptyState } from './EmptyState'
 
 interface JsonPanelProps {
   title: string
@@ -16,6 +17,8 @@ interface JsonPanelProps {
   charCount?: number
   onCopy?: () => void
   copyState?: CopyState
+  showEmptyState?: boolean
+  emptyStateType?: 'input' | 'output'
 }
 
 export function JsonPanel({
@@ -32,6 +35,8 @@ export function JsonPanel({
   charCount,
   onCopy,
   copyState = 'idle',
+  showEmptyState = false,
+  emptyStateType = 'input',
 }: JsonPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -98,6 +103,11 @@ export function JsonPanel({
       </div>
 
       <div className="panel-content">
+        {/* 空状态 */}
+        {showEmptyState && !value && !error && (
+          <EmptyState type={emptyStateType} />
+        )}
+
         {/* 错误高亮层 */}
         {highlightPosition && (
           <div className="error-highlight-layer">
@@ -114,7 +124,7 @@ export function JsonPanel({
         {/* 文本区域 */}
         <textarea
           ref={textareaRef}
-          className={`json-textarea ${error ? 'has-error' : ''}`}
+          className={`json-textarea ${error ? 'has-error' : ''} ${showEmptyState && !value ? 'empty' : ''}`}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           readOnly={readOnly}
